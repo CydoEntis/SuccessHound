@@ -20,12 +20,23 @@ namespace SuccessHound
         /// <summary>
         /// Wrap raw data using the configured factory.
         /// </summary>
-        public static object Wrap(object data)
+        public static object Wrap(object? data)
         {
             if (_factory == null)
                 throw new InvalidOperationException("SuccessHound is not configured. Call Configure() first.");
 
             return _factory.Wrap(data);
+        }
+
+        /// <summary>
+        /// Wrap raw data with metadata using the configured factory.
+        /// </summary>
+        public static object Wrap(object? data, object? meta)
+        {
+            if (_factory == null)
+                throw new InvalidOperationException("SuccessHound is not configured. Call Configure() first.");
+
+            return _factory.Wrap(data, meta);
         }
     }
 }

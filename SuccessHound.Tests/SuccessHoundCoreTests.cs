@@ -1,6 +1,6 @@
 using SuccessHound.Defaults;
-using Xunit;
 using SuccessHound.Abstractions;
+using Xunit;
 
 namespace SuccessHound.Tests
 {
@@ -16,6 +16,7 @@ namespace SuccessHound.Tests
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
+
             var dataProp = type.GetProperty("Data")!.GetValue(result);
             Assert.Equal(payload, dataProp);
         }
@@ -40,6 +41,7 @@ namespace SuccessHound.Tests
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
+
             var dataProp = type.GetProperty("Data")!.GetValue(result);
             Assert.Equal(users, dataProp);
         }
@@ -51,17 +53,19 @@ namespace SuccessHound.Tests
             var payload = new { Name = "Success Hound!" };
             var meta = new { Total = 1 };
 
-            var type = typeof(ApiResponse<>).MakeGenericType(payload.GetType());
-            var okMethod = type.GetMethod("Ok")!;
-            var wrapped = okMethod.Invoke(null, new object?[] { payload, meta });
+            var result = SuccessHoundCore.Wrap(payload, meta);
 
-            var metaProp = wrapped!.GetType().GetProperty("Meta")!.GetValue(wrapped);
+            var type = result.GetType();
+            var dataProp = type.GetProperty("Data")!.GetValue(result);
+            var metaProp = type.GetProperty("Meta")!.GetValue(result);
+
+            Assert.Equal(payload, dataProp);
             Assert.Equal(meta, metaProp);
         }
 
         private class TestFactory : ISuccessResponseFactory
         {
-            public object Wrap(object data) => new { Custom = data };
+            public object Wrap(object? data, object? meta = null) => new { Custom = data, Meta = meta };
         }
 
         [Fact]
@@ -69,11 +73,15 @@ namespace SuccessHound.Tests
         {
             SuccessHoundCore.Configure(new TestFactory());
             var payload = new { Name = "Success Hound!" };
+            var meta = new { Info = "Custom" };
 
-            var result = SuccessHoundCore.Wrap(payload);
+            var result = SuccessHoundCore.Wrap(payload, meta);
 
             var customProp = result.GetType().GetProperty("Custom")!.GetValue(result);
+            var metaProp = result.GetType().GetProperty("Meta")!.GetValue(result);
+
             Assert.Equal(payload, customProp);
+            Assert.Equal(meta, metaProp);
         }
 
         [Fact]
@@ -83,6 +91,7 @@ namespace SuccessHound.Tests
             object? payload = null;
 
             var result = SuccessHoundCore.Wrap(payload);
+
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
             Assert.Null(type.GetProperty("Data")!.GetValue(result));

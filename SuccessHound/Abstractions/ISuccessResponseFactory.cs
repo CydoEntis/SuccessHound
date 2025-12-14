@@ -6,5 +6,6 @@ public interface ISuccessResponseFactory
     /// Wraps successful data in the user-defined response shape.
     /// </summary>
     /// <param name="data">The raw data returned by the handler</param>
-    object Wrap(object data);
+    /// <param name="meta">Optional metadata to include in the response</param>
+    object Wrap(object? data, object? meta = null);
 }
