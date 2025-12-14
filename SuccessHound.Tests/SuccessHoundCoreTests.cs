@@ -4,6 +4,7 @@ using Xunit;
 
 namespace SuccessHound.Tests
 {
+    [Collection("SuccessHound Sequential")]
     public class SuccessHoundCoreTests
     {
         [Fact]
@@ -29,6 +30,9 @@ namespace SuccessHound.Tests
                 .SetValue(null, null);
 
             Assert.Throws<InvalidOperationException>(() => SuccessHoundCore.Wrap(new { }));
+
+            // Restore the factory for other tests
+            SuccessHoundCore.Configure(new DefaultApiResponseFactory());
         }
 
         [Fact]

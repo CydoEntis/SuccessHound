@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuccessHound", "SuccessHoun
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuccessHound.Tests", "SuccessHound.Tests\SuccessHound.Tests.csproj", "{21E58D02-F5AF-4993-9302-16C6E90220A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuccessHound.AspNetExtensions", "SuccessHound.AspNetExtensions\SuccessHound.AspNetExtensions.csproj", "{BB8A46E9-5194-401E-B2D4-C3658382DBC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{21E58D02-F5AF-4993-9302-16C6E90220A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21E58D02-F5AF-4993-9302-16C6E90220A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21E58D02-F5AF-4993-9302-16C6E90220A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB8A46E9-5194-401E-B2D4-C3658382DBC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB8A46E9-5194-401E-B2D4-C3658382DBC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB8A46E9-5194-401E-B2D4-C3658382DBC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB8A46E9-5194-401E-B2D4-C3658382DBC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

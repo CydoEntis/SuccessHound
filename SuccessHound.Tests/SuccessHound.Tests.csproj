@@ -16,9 +16,14 @@
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
 
     <ItemGroup>
       <ProjectReference Include="..\SuccessHound\SuccessHound.csproj" />
+      <ProjectReference Include="..\SuccessHound.AspNetExtensions\SuccessHound.AspNetExtensions.csproj" />
     </ItemGroup>
 
 </Project>
