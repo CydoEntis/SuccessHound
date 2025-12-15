@@ -10,10 +10,10 @@ namespace SuccessHound.Tests
         [Fact]
         public void Wrap_ReturnsApiResponseWithData()
         {
-            SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
             var payload = new { Name = "Cody" };
 
-            var result = SuccessHound.Wrap(payload);
+            var result = Core.SuccessHound.Wrap(payload);
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
@@ -25,23 +25,23 @@ namespace SuccessHound.Tests
         [Fact]
         public void Wrap_ThrowsIfNotConfigured()
         {
-            typeof(SuccessHound)
+            typeof(Core.SuccessHound)
                 .GetField("_responseFactory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
                 .SetValue(null, null);
 
-            Assert.Throws<InvalidOperationException>(() => SuccessHound.Wrap(new { }));
+            Assert.Throws<InvalidOperationException>(() => Core.SuccessHound.Wrap(new { }));
 
             // Restore the factory for other tests
-            SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
         }
 
         [Fact]
         public void Wrap_WrapsCollectionCorrectly()
         {
-            SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
             var users = new List<object> { new { Name = "Alice" }, new { Name = "Bob" } };
 
-            var result = SuccessHound.Wrap(users);
+            var result = Core.SuccessHound.Wrap(users);
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
@@ -53,11 +53,11 @@ namespace SuccessHound.Tests
         [Fact]
         public void Wrap_WithMeta_IncludesMeta()
         {
-            SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
             var payload = new { Name = "Success Hound!" };
             var meta = new { Total = 1 };
 
-            var result = SuccessHound.Wrap(payload, meta);
+            var result = Core.SuccessHound.Wrap(payload, meta);
 
             var type = result.GetType();
             var dataProp = type.GetProperty("Data")!.GetValue(result);
@@ -75,11 +75,11 @@ namespace SuccessHound.Tests
         [Fact]
         public void Wrap_UsesCustomFactory()
         {
-            SuccessHound.Configure(config => config.UseApiResponse(new TestFactory()));
+            Core.SuccessHound.Configure(config => config.UseApiResponse(new TestFactory()));
             var payload = new { Name = "Success Hound!" };
             var meta = new { Info = "Custom" };
 
-            var result = SuccessHound.Wrap(payload, meta);
+            var result = Core.SuccessHound.Wrap(payload, meta);
 
             var customProp = result.GetType().GetProperty("Custom")!.GetValue(result);
             var metaProp = result.GetType().GetProperty("Meta")!.GetValue(result);
@@ -91,10 +91,10 @@ namespace SuccessHound.Tests
         [Fact]
         public void Wrap_NullData_ReturnsApiResponse()
         {
-            SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
             object? payload = null;
 
-            var result = SuccessHound.Wrap(payload);
+            var result = Core.SuccessHound.Wrap(payload);
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
