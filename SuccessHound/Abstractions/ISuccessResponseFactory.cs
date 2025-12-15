@@ -1,5 +1,8 @@
 ﻿namespace SuccessHound.Abstractions;
 
+/// <summary>
+/// Factory interface for creating custom success response wrappers
+/// </summary>
 public interface ISuccessResponseFactory
 {
     /// <summary>
