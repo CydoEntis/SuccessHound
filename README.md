@@ -1,6 +1,12 @@
 # SuccessHound
 
-A lightweight, extensible .NET library for wrapping API responses in consistent success envelopes. Built with a flexible factory pattern for maximum customization.
+<p align="center">
+  <img src="assets/logo.png" alt="SuccessHound Logo" style="width: 180px; border-radius: 20px;"/>
+</p>
+
+<p align="center">
+  <em>A lightweight, extensible .NET library for wrapping API responses in consistent success envelopes.</em>
+</p>
 
 ## Why SuccessHound?
 
@@ -13,11 +19,11 @@ A lightweight, extensible .NET library for wrapping API responses in consistent 
 
 ## Packages
 
-| Package | Description | When to Use |
-|---------|-------------|-------------|
-| **SuccessHound** | Core response wrapping (framework-agnostic) | Required - Install first |
-| **SuccessHound.AspNetExtensions** | ASP.NET Core Minimal API extensions | Required for ASP.NET Core |
-| **SuccessHound.Pagination** | EF Core + in-memory pagination | Optional - Only if you need pagination |
+| Package                           | Description                                 | When to Use                            |
+|-----------------------------------|---------------------------------------------|----------------------------------------|
+| **SuccessHound**                  | Core response wrapping (framework-agnostic) | Required - Install first               |
+| **SuccessHound.AspNetExtensions** | ASP.NET Core Minimal API extensions         | Required for ASP.NET Core              |
+| **SuccessHound.Pagination**       | EF Core + in-memory pagination              | Optional - Only if you need pagination |
 
 ## Installation
 
@@ -63,6 +69,7 @@ app.Run();
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -105,12 +112,19 @@ app.Run();
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "data": [
-    { "id": 1, "name": "Alice" },
-    { "id": 2, "name": "Bob" }
+    {
+      "id": 1,
+      "name": "Alice"
+    },
+    {
+      "id": 2,
+      "name": "Bob"
+    }
   ],
   "meta": {
     "pagination": {
@@ -155,10 +169,14 @@ app.MapGet("/products/{id}", (int id) =>
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "success": true,
-  "data": { "id": 1, "name": "Product Name" },
+  "data": {
+    "id": 1,
+    "name": "Product Name"
+  },
   "meta": null,
   "timestamp": "2025-12-15T10:30:00.000Z"
 }
@@ -225,10 +243,13 @@ app.MapGet("/products", (int page = 1) =>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
-  "data": [...],
+  "data": [
+    ...
+  ],
   "meta": {
     "page": 1,
     "version": "v1.0",
@@ -403,6 +424,7 @@ app.MapGet("/user/{id}", (int id) =>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -427,12 +449,19 @@ app.MapGet("/users", () =>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "data": [
-    { "id": 1, "name": "Alice" },
-    { "id": 2, "name": "Bob" }
+    {
+      "id": 1,
+      "name": "Alice"
+    },
+    {
+      "id": 2,
+      "name": "Bob"
+    }
   ],
   "meta": null,
   "timestamp": "2025-12-15T10:30:00.000Z"
@@ -462,7 +491,6 @@ app.MapGet("/report", () =>
 - **.NET 8.0** or higher
 - **ASP.NET Core 8.0+** (for AspNetExtensions package)
 - **Entity Framework Core 8.0+** (for `ToPagedResultAsync()` in Pagination package)
-
 
 ## License
 
