@@ -1,6 +1,6 @@
 using SuccessHound.Abstractions;
 
-namespace SuccessHound;
+namespace SuccessHound.Config;
 
 /// <summary>
 /// Configuration options for SuccessHound and its extensions
