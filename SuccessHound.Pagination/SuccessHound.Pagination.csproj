@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>SuccessHound.Pagination</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>CydoEntis</Authors>
+    <Description>Optional pagination package for SuccessHound. Provides EF Core and in-memory pagination with customizable metadata factories. Includes ToPagedResultAsync() extension methods.</Description>
+    <PackageTags>api;pagination;efcore;response;metadata;dotnet;rest</PackageTags>
+    <PackageProjectUrl>https://github.com/CydoEntis/SuccessHound</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CydoEntis/SuccessHound</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReleaseNotes>Initial release with offset-based pagination and extensible factory pattern.</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SuccessHound\SuccessHound.csproj" />
+    <ProjectReference Include="..\SuccessHound.AspNetExtensions\SuccessHound.AspNetExtensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
