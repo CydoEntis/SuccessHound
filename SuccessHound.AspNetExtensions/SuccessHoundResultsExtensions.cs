@@ -9,11 +9,11 @@ namespace SuccessHound.AspNetExtensions
     public static class SuccessHoundResultsExtensions
     {
         /// <summary>
-        /// Returns a 200 OK response with data wrapped in SuccessHoundCore.
+        /// Returns a 200 OK response with data wrapped in SuccessHound.
         /// </summary>
         public static IResult Ok<T>(this T data)
         {
-            var wrapped = SuccessHoundCore.Wrap(data);
+            var wrapped = SuccessHound.Wrap(data);
             return Results.Ok(wrapped);
         }
 
@@ -22,7 +22,7 @@ namespace SuccessHound.AspNetExtensions
         /// </summary>
         public static IResult Created<T>(this T data, string location)
         {
-            var wrapped = SuccessHoundCore.Wrap(data);
+            var wrapped = SuccessHound.Wrap(data);
             return Results.Created(location, wrapped);
         }
 
@@ -47,7 +47,7 @@ namespace SuccessHound.AspNetExtensions
         /// </summary>
         public static IResult Updated<T>(this T data)
         {
-            var wrapped = SuccessHoundCore.Wrap(data);
+            var wrapped = SuccessHound.Wrap(data);
             return Results.Ok(wrapped);
         }
 
@@ -56,7 +56,7 @@ namespace SuccessHound.AspNetExtensions
         /// </summary>
         public static IResult WithMeta<T>(this T data, object meta)
         {
-            var wrapped = SuccessHoundCore.Wrap(data, meta);
+            var wrapped = SuccessHound.Wrap(data, meta);
             return Results.Ok(wrapped);
         }
 
@@ -65,7 +65,7 @@ namespace SuccessHound.AspNetExtensions
         /// </summary>
         public static IResult Custom<T>(this T data, int statusCode)
         {
-            var wrapped = SuccessHoundCore.Wrap(data);
+            var wrapped = SuccessHound.Wrap(data);
             return Results.Json(wrapped, statusCode: statusCode);
         }
     }

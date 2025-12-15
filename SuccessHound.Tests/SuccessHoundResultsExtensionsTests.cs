@@ -11,7 +11,7 @@ namespace SuccessHound.Tests
     {
         public SuccessHoundResultsExtensionsTests()
         {
-            SuccessHoundCore.Configure(new DefaultApiResponseFactory());
+            SuccessHound.Configure(config => config.UseDefaultApiResponse());
         }
 
         [Fact]

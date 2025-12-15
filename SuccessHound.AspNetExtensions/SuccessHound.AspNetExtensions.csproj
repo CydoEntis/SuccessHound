@@ -4,6 +4,20 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <!-- NuGet Package Metadata -->
+        <PackageId>SuccessHound.AspNetExtensions</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>CydoEntis</Authors>
+        <Description>ASP.NET Core Minimal API extensions for SuccessHound. Provides fluent extension methods (.Ok(), .Created(), .Updated(), etc.) for wrapping responses.</Description>
+        <PackageTags>api;aspnetcore;minimal-api;response;extensions;dotnet;rest</PackageTags>
+        <PackageProjectUrl>https://github.com/CydoEntis/SuccessHound</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/CydoEntis/SuccessHound</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageReleaseNotes>Initial release with comprehensive HTTP extension methods for ASP.NET Core.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,6 +26,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SuccessHound\SuccessHound.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\LICENSE" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
