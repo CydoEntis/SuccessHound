@@ -8,6 +8,19 @@
   <em>A lightweight, extensible .NET library for wrapping API responses in consistent success envelopes.</em>
 </p>
 
+<p align="center">
+  <a href="https://www.nuget.org/packages/SuccessHound"><img src="https://img.shields.io/nuget/v/SuccessHound?style=flat-square&logo=nuget&label=SuccessHound" alt="NuGet Version"></a>
+  <a href="https://www.nuget.org/packages/SuccessHound.AspNetExtensions"><img src="https://img.shields.io/nuget/v/SuccessHound.AspNetExtensions?style=flat-square&logo=nuget&label=AspNetExtensions" alt="NuGet Version"></a>
+  <a href="https://www.nuget.org/packages/SuccessHound.Pagination"><img src="https://img.shields.io/nuget/v/SuccessHound.Pagination?style=flat-square&logo=nuget&label=Pagination" alt="NuGet Version"></a>
+</p>
+
+<p align="center">
+  <a href="https://www.nuget.org/packages/SuccessHound"><img src="https://img.shields.io/nuget/dt/SuccessHound?style=flat-square&logo=nuget&label=downloads&color=blue" alt="NuGet Downloads"></a>
+  <a href="https://github.com/CydoEntis/SuccessHound/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
+  <a href="https://dotnet.microsoft.com/download"><img src="https://img.shields.io/badge/.NET-8.0-purple?style=flat-square&logo=dotnet" alt=".NET Version"></a>
+  <a href="https://github.com/CydoEntis/SuccessHound"><img src="https://img.shields.io/github/stars/CydoEntis/SuccessHound?style=flat-square&logo=github" alt="GitHub Stars"></a>
+</p>
+
 ## Why SuccessHound?
 
 - **Consistent API responses** - Standardized success envelope across your entire API
@@ -19,11 +32,11 @@
 
 ## Packages
 
-| Package                           | Description                                 | When to Use                            |
-|-----------------------------------|---------------------------------------------|----------------------------------------|
-| **SuccessHound**                  | Core response wrapping (framework-agnostic) | Required - Install first               |
-| **SuccessHound.AspNetExtensions** | ASP.NET Core Minimal API extensions         | Required for ASP.NET Core              |
-| **SuccessHound.Pagination**       | EF Core + in-memory pagination              | Optional - Only if you need pagination |
+| Package | Description | NuGet | When to Use |
+|---------|-------------|-------|-------------|
+| **SuccessHound** | Core response wrapping (framework-agnostic) | [![NuGet](https://img.shields.io/nuget/v/SuccessHound?style=flat-square)](https://www.nuget.org/packages/SuccessHound) | Required - Install first |
+| **SuccessHound.AspNetExtensions** | ASP.NET Core Minimal API extensions | [![NuGet](https://img.shields.io/nuget/v/SuccessHound.AspNetExtensions?style=flat-square)](https://www.nuget.org/packages/SuccessHound.AspNetExtensions) | Required for ASP.NET Core |
+| **SuccessHound.Pagination** | EF Core + in-memory pagination | [![NuGet](https://img.shields.io/nuget/v/SuccessHound.Pagination?style=flat-square)](https://www.nuget.org/packages/SuccessHound.Pagination) | Optional - Only if you need pagination |
 
 ## Installation
 

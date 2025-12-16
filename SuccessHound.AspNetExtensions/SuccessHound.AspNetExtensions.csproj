@@ -7,7 +7,7 @@
 
         <!-- NuGet Package Metadata -->
         <PackageId>SuccessHound.AspNetExtensions</PackageId>
-        <Version>1.0.0</Version>
+        <Version>0.1.0</Version>
         <Authors>CydoEntis</Authors>
         <Description>ASP.NET Core Minimal API extensions for SuccessHound. Provides fluent extension methods (.Ok(), .Created(), .Updated(), etc.) for wrapping responses.</Description>
         <PackageTags>api;aspnetcore;minimal-api;response;extensions;dotnet;rest</PackageTags>

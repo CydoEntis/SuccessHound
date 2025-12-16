@@ -7,7 +7,7 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>SuccessHound.Pagination</PackageId>
-    <Version>1.0.0</Version>
+    <Version>0.1.0</Version>
     <Authors>CydoEntis</Authors>
     <Description>Optional pagination package for SuccessHound. Provides EF Core and in-memory pagination with customizable metadata factories. Includes ToPagedResultAsync() extension methods.</Description>
     <PackageTags>api;pagination;efcore;response;metadata;dotnet;rest</PackageTags>
