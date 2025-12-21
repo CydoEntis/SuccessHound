@@ -7,7 +7,7 @@
 
         <!-- NuGet Package Metadata -->
         <PackageId>SuccessHound.AspNetExtensions</PackageId>
-        <Version>0.1.0</Version>
+        <Version>1.0.0</Version>
         <Authors>CydoEntis</Authors>
         <Description>ASP.NET Core Minimal API extensions for SuccessHound. Provides fluent extension methods (.Ok(), .Created(), .Updated(), etc.) for wrapping responses.</Description>
         <PackageTags>api;aspnetcore;minimal-api;response;extensions;dotnet;rest</PackageTags>
@@ -17,7 +17,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <PackageReleaseNotes>Initial release with comprehensive HTTP extension methods for ASP.NET Core.</PackageReleaseNotes>
+        <PackageReleaseNotes>v1.0.0 - Breaking changes: All extension methods now require HttpContext parameter for DI-based formatter resolution. Adds UseSuccessHound() middleware extension. See README for migration guide.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

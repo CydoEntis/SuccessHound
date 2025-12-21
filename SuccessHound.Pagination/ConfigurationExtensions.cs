@@ -1,4 +1,5 @@
-using SuccessHound.Config;
+using Microsoft.Extensions.DependencyInjection;
+using SuccessHound.Options;
 using SuccessHound.Pagination.Abstractions;
 using SuccessHound.Pagination.Defaults;
 
@@ -12,38 +13,53 @@ public static class ConfigurationExtensions
     /// <summary>
     /// Enable pagination with default factory
     /// </summary>
-    /// <param name="config">SuccessHound configuration</param>
-    /// <returns>Configuration instance for method chaining</returns>
-    public static SuccessHoundConfiguration UsePagination(this SuccessHoundConfiguration config)
+    /// <param name="options">SuccessHound options</param>
+    /// <returns>Options instance for method chaining</returns>
+    public static SuccessHoundOptions UsePagination(this SuccessHoundOptions options)
     {
-        config.SetPaginationFactory(new DefaultPaginationMetadataFactory());
-        return config;
+        options.PaginationFactory = new DefaultPaginationMetadataFactory();
+        return options;
     }
 
     /// <summary>
     /// Enable pagination with custom factory
     /// </summary>
-    /// <param name="config">SuccessHound configuration</param>
+    /// <param name="options">SuccessHound options</param>
     /// <param name="factory">Your custom pagination metadata factory</param>
-    /// <returns>Configuration instance for method chaining</returns>
-    public static SuccessHoundConfiguration UsePagination(
-        this SuccessHoundConfiguration config,
+    /// <returns>Options instance for method chaining</returns>
+    public static SuccessHoundOptions UsePagination(
+        this SuccessHoundOptions options,
         IPaginationMetadataFactory factory)
     {
-        config.SetPaginationFactory(factory);
-        return config;
+        options.PaginationFactory = factory;
+        return options;
     }
 
     /// <summary>
     /// Enable pagination with custom factory by type
     /// </summary>
     /// <typeparam name="TFactory">Factory type with parameterless constructor</typeparam>
-    /// <param name="config">SuccessHound configuration</param>
-    /// <returns>Configuration instance for method chaining</returns>
-    public static SuccessHoundConfiguration UsePagination<TFactory>(this SuccessHoundConfiguration config)
+    /// <param name="options">SuccessHound options</param>
+    /// <returns>Options instance for method chaining</returns>
+    public static SuccessHoundOptions UsePagination<TFactory>(this SuccessHoundOptions options)
         where TFactory : IPaginationMetadataFactory, new()
     {
-        config.SetPaginationFactory(new TFactory());
-        return config;
+        options.PaginationFactory = new TFactory();
+        return options;
+    }
+
+    /// <summary>
+    /// Registers pagination services with dependency injection
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <param name="options">SuccessHound options containing pagination configuration</param>
+    internal static void AddPaginationServices(this IServiceCollection services, SuccessHoundOptions options)
+    {
+        if (options.PaginationFactory is not null)
+        {
+            services.AddSingleton(
+                typeof(IPaginationMetadataFactory),
+                options.PaginationFactory.GetType());
+        }
     }
 }

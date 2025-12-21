@@ -7,7 +7,7 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>SuccessHound.Pagination</PackageId>
-    <Version>0.1.0</Version>
+    <Version>1.0.0</Version>
     <Authors>CydoEntis</Authors>
     <Description>Optional pagination package for SuccessHound. Provides EF Core and in-memory pagination with customizable metadata factories. Includes ToPagedResultAsync() extension methods.</Description>
     <PackageTags>api;pagination;efcore;response;metadata;dotnet;rest</PackageTags>
@@ -17,12 +17,13 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageReleaseNotes>Initial release with offset-based pagination and extensible factory pattern.</PackageReleaseNotes>
+    <PackageReleaseNotes>v1.0.0 - Breaking changes: ToPagedResultAsync() and ToPagedResult() now require HttpContext parameter. UsePagination() works with SuccessHoundOptions instead of static configuration. See README for migration guide.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>

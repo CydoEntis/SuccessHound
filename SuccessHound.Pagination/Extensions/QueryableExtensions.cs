@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SuccessHound.AspNetExtensions;
+using SuccessHound.Pagination.Abstractions;
 
 namespace SuccessHound.Pagination.Extensions;
 
@@ -16,6 +17,7 @@ public static class QueryableExtensions
     /// <param name="query">The query to paginate (should already be filtered and ordered)</param>
     /// <param name="page">Page number (1-based)</param>
     /// <param name="pageSize">Number of items per page</param>
+    /// <param name="context">HTTP context for accessing services</param>
     /// <param name="includeTotalCount">Whether to execute COUNT query (can be expensive for large tables)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>IResult with paginated data wrapped in SuccessHound format</returns>
@@ -24,10 +26,17 @@ public static class QueryableExtensions
         this IQueryable<T> query,
         int page,
         int pageSize,
+        HttpContext context,
         bool includeTotalCount = true,
         CancellationToken cancellationToken = default)
     {
-        var factory = Core.SuccessHound.GetPaginationFactory();
+        var factory = context.RequestServices.GetService(typeof(IPaginationMetadataFactory)) as IPaginationMetadataFactory;
+        if (factory is null)
+        {
+            throw new InvalidOperationException(
+                "IPaginationMetadataFactory is not registered. " +
+                "Call options.UsePagination() in AddSuccessHound configuration.");
+        }
 
         var totalCount = includeTotalCount
             ? await query.CountAsync(cancellationToken)
@@ -40,6 +49,6 @@ public static class QueryableExtensions
 
         var metadata = factory.CreateMetadata(page, pageSize, totalCount);
 
-        return items.WithMeta(new { Pagination = metadata });
+        return items.WithMeta(new { Pagination = metadata }, context);
     }
 }

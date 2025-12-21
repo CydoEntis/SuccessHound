@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.DependencyInjection;
+using SuccessHound.Abstractions;
 using SuccessHound.AspNetExtensions;
 using SuccessHound.Defaults;
 using System.Text.Json;
@@ -6,12 +9,20 @@ using Xunit;
 
 namespace SuccessHound.Tests
 {
-    [Collection("SuccessHound Sequential")]
     public class SuccessHoundResultsExtensionsTests
     {
+        private readonly HttpContext _context;
+
         public SuccessHoundResultsExtensionsTests()
         {
-            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            var services = new ServiceCollection();
+            services.AddSingleton<ISuccessResponseFormatter, DefaultSuccessFormatter>();
+            var serviceProvider = services.BuildServiceProvider();
+
+            _context = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
         }
 
         [Fact]
@@ -19,7 +30,7 @@ namespace SuccessHound.Tests
         {
             var payload = new { Name = "Test User" };
 
-            var result = payload.Ok();
+            var result = payload.Ok(_context);
 
             Assert.IsType<Ok<object>>(result);
             var okResult = (Ok<object>)result;
@@ -35,7 +46,7 @@ namespace SuccessHound.Tests
             var payload = new { Id = 123, Name = "New Item" };
             var location = "/api/items/123";
 
-            var result = payload.Created(location);
+            var result = payload.Created(location, _context);
 
             Assert.IsType<Created<object>>(result);
             var createdResult = (Created<object>)result;
@@ -67,7 +78,7 @@ namespace SuccessHound.Tests
         {
             var payload = new { Id = 456, Name = "Updated Item" };
 
-            var result = payload.Updated();
+            var result = payload.Updated(_context);
 
             Assert.IsType<Ok<object>>(result);
             var okResult = (Ok<object>)result;
@@ -83,7 +94,7 @@ namespace SuccessHound.Tests
             var payload = new { Name = "Item" };
             var meta = new { Total = 100, Page = 1 };
 
-            var result = payload.WithMeta(meta);
+            var result = payload.WithMeta(meta, _context);
 
             Assert.IsType<Ok<object>>(result);
             var okResult = (Ok<object>)result;
@@ -99,9 +110,9 @@ namespace SuccessHound.Tests
         public void Custom_ReturnsJsonResultWithCustomStatusCode()
         {
             var payload = new { Message = "Custom response" };
-            var statusCode = 202; 
+            var statusCode = 202;
 
-            var result = payload.Custom(statusCode);
+            var result = payload.Custom(statusCode, _context);
 
             Assert.IsType<JsonHttpResult<object>>(result);
             var jsonResult = (JsonHttpResult<object>)result;
@@ -117,7 +128,7 @@ namespace SuccessHound.Tests
         {
             object? payload = null;
 
-            var result = payload.Ok();
+            var result = payload.Ok(_context);
 
             Assert.IsType<Ok<object>>(result);
             var okResult = (Ok<object>)result;
@@ -136,7 +147,7 @@ namespace SuccessHound.Tests
                 new { Id = 2, Name = "Item 2" }
             };
 
-            var result = payload.Ok();
+            var result = payload.Ok(_context);
 
             Assert.IsType<Ok<object>>(result);
             var okResult = (Ok<object>)result;
