@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.DependencyInjection;
+using SuccessHound.Abstractions;
 using SuccessHound.Defaults;
 using SuccessHound.Pagination;
 using SuccessHound.Pagination.Abstractions;
@@ -11,17 +13,22 @@ using Xunit;
 
 namespace SuccessHound.Tests
 {
-    [Collection("SuccessHound Sequential")]
     public class PaginationTests
     {
+        private readonly HttpContext _context;
+
         public PaginationTests()
         {
-            // Configure SuccessHound with pagination
-            Core.SuccessHound.Configure(config =>
+            // Configure services with pagination
+            var services = new ServiceCollection();
+            services.AddSingleton<ISuccessResponseFormatter, DefaultSuccessFormatter>();
+            services.AddSingleton<IPaginationMetadataFactory, DefaultPaginationMetadataFactory>();
+            var serviceProvider = services.BuildServiceProvider();
+
+            _context = new DefaultHttpContext
             {
-                config.UseDefaultApiResponse();
-                config.UsePagination();
-            });
+                RequestServices = serviceProvider
+            };
         }
 
         [Fact]
@@ -79,7 +86,7 @@ namespace SuccessHound.Tests
         {
             var items = Enumerable.Range(1, 100).Select(i => new { Id = i, Name = $"Item {i}" }).ToList();
 
-            var result = items.ToPagedResult(page: 2, pageSize: 10);
+            var result = items.ToPagedResult(page: 2, pageSize: 10, _context);
 
             Assert.IsType<Ok<object>>(result);
             var okResult = (Ok<object>)result;
@@ -97,7 +104,7 @@ namespace SuccessHound.Tests
         {
             var items = new List<string>();
 
-            var result = items.ToPagedResult(page: 1, pageSize: 10);
+            var result = items.ToPagedResult(page: 1, pageSize: 10, _context);
 
             Assert.IsType<Ok<object>>(result);
             var okResult = (Ok<object>)result;
@@ -113,7 +120,7 @@ namespace SuccessHound.Tests
         {
             var items = new[] { "A", "B", "C" };
 
-            var result = items.ToPagedResult(page: 1, pageSize: 10);
+            var result = items.ToPagedResult(page: 1, pageSize: 10, _context);
 
             var okResult = (Ok<object>)result;
             var json = JsonSerializer.Serialize(okResult.Value);
@@ -175,96 +182,39 @@ namespace SuccessHound.Tests
         }
 
         [Fact]
-        public void ConfigurationExtensions_UsePagination_WorksWithConfiguration()
+        public void ConfigurationExtensions_UsePagination_WorksWithOptions()
         {
             // Test that UsePagination() can be called without throwing
-            Core.SuccessHound.Configure(config =>
-            {
-                config.UseDefaultApiResponse();
-                config.UsePagination();
-            });
+            var options = new Options.SuccessHoundOptions();
+            options.UseFormatter<DefaultSuccessFormatter>();
+            options.UsePagination();
 
-            // Verify pagination is enabled
-            Assert.True(Core.SuccessHound.IsPaginationEnabled);
+            // Verify pagination factory is set
+            Assert.NotNull(options.PaginationFactory);
         }
 
         [Fact]
         public void ConfigurationExtensions_UsePaginationWithFactory_WorksWithCustomFactory()
         {
             var customFactory = new CustomTestPaginationFactory();
+            var options = new Options.SuccessHoundOptions();
+            options.UseFormatter<DefaultSuccessFormatter>();
+            options.UsePagination(customFactory);
 
-            Core.SuccessHound.Configure(config =>
-            {
-                config.UseDefaultApiResponse();
-                config.UsePagination(customFactory);
-            });
-
-            // Verify pagination is enabled
-            Assert.True(Core.SuccessHound.IsPaginationEnabled);
+            // Verify pagination factory is set
+            Assert.Equal(customFactory, options.PaginationFactory);
         }
 
         [Fact]
         public void ConfigurationExtensions_UsePaginationGeneric_WorksWithGenericType()
         {
-            Core.SuccessHound.Configure(config =>
-            {
-                config.UseDefaultApiResponse();
-                config.UsePagination<CustomTestPaginationFactory>();
-            });
+            var options = new Options.SuccessHoundOptions();
+            options.UseFormatter<DefaultSuccessFormatter>();
+            options.UsePagination<CustomTestPaginationFactory>();
 
-            // Verify pagination is enabled
-            Assert.True(Core.SuccessHound.IsPaginationEnabled);
-        }
-
-        [Fact]
-        public void SuccessHound_GetPaginationFactory_ThrowsIfNotConfigured()
-        {
-            // Reset configuration
-            typeof(Core.SuccessHound)
-                .GetField("_paginationFactory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
-                .SetValue(null, null);
-
-            var exception = Assert.Throws<InvalidOperationException>(() => Core.SuccessHound.GetPaginationFactory());
-
-            Assert.Contains("Pagination is not configured", exception.Message);
-
-            // Restore for other tests
-            Core.SuccessHound.Configure(config =>
-            {
-                config.UseDefaultApiResponse();
-                config.UsePagination();
-            });
-        }
-
-        [Fact]
-        public void SuccessHound_IsPaginationEnabled_ReturnsTrueWhenConfigured()
-        {
-            Core.SuccessHound.Configure(config =>
-            {
-                config.UseDefaultApiResponse();
-                config.UsePagination();
-            });
-
-            Assert.True(Core.SuccessHound.IsPaginationEnabled);
-        }
-
-        [Fact]
-        public void SuccessHound_IsPaginationEnabled_ReturnsFalseWhenNotConfigured()
-        {
-            Core.SuccessHound.Configure(config =>
-            {
-                config.UseDefaultApiResponse();
-                // Don't call UsePagination()
-            });
-
-            Assert.False(Core.SuccessHound.IsPaginationEnabled);
-
-            // Restore for other tests
-            Core.SuccessHound.Configure(config =>
-            {
-                config.UseDefaultApiResponse();
-                config.UsePagination();
-            });
+            // Verify pagination factory is set
+            Assert.NotNull(options.PaginationFactory);
+            Assert.IsType<CustomTestPaginationFactory>(options.PaginationFactory);
         }
 
         private class CustomTestPaginationFactory : IPaginationMetadataFactory

@@ -4,16 +4,15 @@ using Xunit;
 
 namespace SuccessHound.Tests
 {
-    [Collection("SuccessHound Sequential")]
     public class SuccessHoundCoreTests
     {
         [Fact]
-        public void Wrap_ReturnsApiResponseWithData()
+        public void Format_ReturnsApiResponseWithData()
         {
-            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            var formatter = new DefaultSuccessFormatter();
             var payload = new { Name = "Cody" };
 
-            var result = Core.SuccessHound.Wrap(payload);
+            var result = formatter.Format(payload);
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
@@ -23,25 +22,12 @@ namespace SuccessHound.Tests
         }
 
         [Fact]
-        public void Wrap_ThrowsIfNotConfigured()
+        public void Format_WrapsCollectionCorrectly()
         {
-            typeof(Core.SuccessHound)
-                .GetField("_responseFactory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
-                .SetValue(null, null);
-
-            Assert.Throws<InvalidOperationException>(() => Core.SuccessHound.Wrap(new { }));
-
-            // Restore the factory for other tests
-            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
-        }
-
-        [Fact]
-        public void Wrap_WrapsCollectionCorrectly()
-        {
-            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            var formatter = new DefaultSuccessFormatter();
             var users = new List<object> { new { Name = "Alice" }, new { Name = "Bob" } };
 
-            var result = Core.SuccessHound.Wrap(users);
+            var result = formatter.Format(users);
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
@@ -51,13 +37,13 @@ namespace SuccessHound.Tests
         }
 
         [Fact]
-        public void Wrap_WithMeta_IncludesMeta()
+        public void Format_WithMeta_IncludesMeta()
         {
-            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            var formatter = new DefaultSuccessFormatter();
             var payload = new { Name = "Success Hound!" };
             var meta = new { Total = 1 };
 
-            var result = Core.SuccessHound.Wrap(payload, meta);
+            var result = formatter.Format(payload, meta);
 
             var type = result.GetType();
             var dataProp = type.GetProperty("Data")!.GetValue(result);
@@ -67,19 +53,19 @@ namespace SuccessHound.Tests
             Assert.Equal(meta, metaProp);
         }
 
-        private class TestFactory : ISuccessResponseFactory
+        private class TestFormatter : ISuccessResponseFormatter
         {
-            public object Wrap(object? data, object? meta = null) => new { Custom = data, Meta = meta };
+            public object Format(object? data, object? meta = null) => new { Custom = data, Meta = meta };
         }
 
         [Fact]
-        public void Wrap_UsesCustomFactory()
+        public void Format_UsesCustomFormatter()
         {
-            Core.SuccessHound.Configure(config => config.UseApiResponse(new TestFactory()));
+            var formatter = new TestFormatter();
             var payload = new { Name = "Success Hound!" };
             var meta = new { Info = "Custom" };
 
-            var result = Core.SuccessHound.Wrap(payload, meta);
+            var result = formatter.Format(payload, meta);
 
             var customProp = result.GetType().GetProperty("Custom")!.GetValue(result);
             var metaProp = result.GetType().GetProperty("Meta")!.GetValue(result);
@@ -89,12 +75,12 @@ namespace SuccessHound.Tests
         }
 
         [Fact]
-        public void Wrap_NullData_ReturnsApiResponse()
+        public void Format_NullData_ReturnsApiResponse()
         {
-            Core.SuccessHound.Configure(config => config.UseDefaultApiResponse());
+            var formatter = new DefaultSuccessFormatter();
             object? payload = null;
 
-            var result = Core.SuccessHound.Wrap(payload);
+            var result = formatter.Format(payload);
 
             var type = result.GetType();
             Assert.Equal("ApiResponse`1", type.Name);
