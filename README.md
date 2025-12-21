@@ -60,22 +60,26 @@ dotnet add package SuccessHound.Pagination
 ### Minimal Setup
 
 ```csharp
-using SuccessHound;
+using SuccessHound.Extensions;
+using SuccessHound.Defaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure SuccessHound
-SuccessHound.Configure(config =>
+// Configure SuccessHound with DI
+builder.Services.AddSuccessHound(options =>
 {
-    config.UseDefaultApiResponse();
+    options.UseFormatter<DefaultSuccessFormatter>();
 });
 
 var app = builder.Build();
 
-app.MapGet("/users/{id}", (int id) =>
+// Optional: Add middleware (currently pass-through)
+app.UseSuccessHound();
+
+app.MapGet("/users/{id}", (int id, HttpContext context) =>
 {
     var user = new { Id = id, Name = "John Doe", Email = "john@example.com" };
-    return user.Ok(); // Wraps in success envelope
+    return user.Ok(context); // Wraps in success envelope
 });
 
 app.Run();
@@ -99,26 +103,29 @@ app.Run();
 ### With Pagination
 
 ```csharp
-using SuccessHound;
+using SuccessHound.Extensions;
+using SuccessHound.Defaults;
 using SuccessHound.Pagination;
 using SuccessHound.Pagination.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Enable pagination
-SuccessHound.Configure(config =>
+// Configure SuccessHound with pagination
+builder.Services.AddSuccessHound(options =>
 {
-    config.UseDefaultApiResponse();
-    config.UsePagination(); // Add this line!
+    options.UseFormatter<DefaultSuccessFormatter>();
+    options.UsePagination(); // Add this line!
 });
 
 var app = builder.Build();
 
-app.MapGet("/users", async (AppDbContext db, int page = 1, int pageSize = 10) =>
+app.UseSuccessHound();
+
+app.MapGet("/users", async (AppDbContext db, HttpContext context, int page = 1, int pageSize = 10) =>
 {
     return await db.Users
         .OrderBy(u => u.Id)
-        .ToPagedResultAsync(page, pageSize);
+        .ToPagedResultAsync(page, pageSize, context);
 });
 
 app.Run();
@@ -174,10 +181,10 @@ public class ApiResponse<T>
 Returns `200 OK` with wrapped data.
 
 ```csharp
-app.MapGet("/products/{id}", (int id) =>
+app.MapGet("/products/{id}", (int id, HttpContext context) =>
 {
     var product = GetProduct(id);
-    return product.Ok();
+    return product.Ok(context);
 });
 ```
 
@@ -200,10 +207,10 @@ app.MapGet("/products/{id}", (int id) =>
 Returns `201 Created` with Location header.
 
 ```csharp
-app.MapPost("/products", (Product product) =>
+app.MapPost("/products", (Product product, HttpContext context) =>
 {
     var created = CreateProduct(product);
-    return created.Created($"/products/{created.Id}");
+    return created.Created($"/products/{created.Id}", context);
 });
 ```
 
@@ -214,10 +221,10 @@ app.MapPost("/products", (Product product) =>
 Returns `200 OK` for update operations.
 
 ```csharp
-app.MapPut("/products/{id}", (int id, Product product) =>
+app.MapPut("/products/{id}", (int id, Product product, HttpContext context) =>
 {
     var updated = UpdateProduct(id, product);
-    return updated.Updated();
+    return updated.Updated(context);
 });
 ```
 
@@ -242,7 +249,7 @@ app.MapDelete("/products/{id}", (int id) =>
 Returns `200 OK` with custom metadata.
 
 ```csharp
-app.MapGet("/products", (int page = 1) =>
+app.MapGet("/products", (HttpContext context, int page = 1) =>
 {
     var products = GetProducts(page);
     var meta = new
@@ -251,7 +258,7 @@ app.MapGet("/products", (int page = 1) =>
         Version = "v1.0",
         ServerTime = DateTime.UtcNow
     };
-    return products.WithMeta(meta);
+    return products.WithMeta(meta, context);
 });
 ```
 
@@ -277,10 +284,10 @@ app.MapGet("/products", (int page = 1) =>
 Returns custom HTTP status code.
 
 ```csharp
-app.MapPost("/products/process", (Product product) =>
+app.MapPost("/products/process", (Product product, HttpContext context) =>
 {
     var result = ProcessProduct(product);
-    return result.Custom(202); // 202 Accepted
+    return result.Custom(202, context); // 202 Accepted
 });
 ```
 
@@ -293,22 +300,22 @@ app.MapPost("/products/process", (Product product) =>
 ```csharp
 using SuccessHound.Pagination.Extensions;
 
-app.MapGet("/users", async (AppDbContext db, int page = 1, int pageSize = 20) =>
+app.MapGet("/users", async (AppDbContext db, HttpContext context, int page = 1, int pageSize = 20) =>
 {
     return await db.Users
         .Where(u => u.IsActive)
         .OrderBy(u => u.CreatedAt)
-        .ToPagedResultAsync(page, pageSize);
+        .ToPagedResultAsync(page, pageSize, context);
 });
 ```
 
 ### In-Memory Pagination
 
 ```csharp
-app.MapGet("/items", (int page = 1, int pageSize = 10) =>
+app.MapGet("/items", (HttpContext context, int page = 1, int pageSize = 10) =>
 {
     var items = GetAllItems(); // Returns IEnumerable<T>
-    return items.ToPagedResult(page, pageSize);
+    return items.ToPagedResult(page, pageSize, context);
 });
 ```
 
@@ -331,16 +338,16 @@ Default pagination metadata includes:
 
 ## Advanced Usage
 
-### Custom Response Factory
+### Custom Response Formatter
 
 Create your own response structure:
 
 ```csharp
 using SuccessHound.Abstractions;
 
-public class MyApiResponseFactory : ISuccessResponseFactory
+public sealed class MyCustomFormatter : ISuccessResponseFormatter
 {
-    public object Wrap(object? data, object? meta = null)
+    public object Format(object? data, object? meta = null)
     {
         return new
         {
@@ -357,9 +364,9 @@ public class MyApiResponseFactory : ISuccessResponseFactory
 Use it:
 
 ```csharp
-SuccessHound.Configure(config =>
+builder.Services.AddSuccessHound(options =>
 {
-    config.UseApiResponse(new MyApiResponseFactory());
+    options.UseFormatter<MyCustomFormatter>();
 });
 ```
 
@@ -370,7 +377,7 @@ Customize pagination metadata:
 ```csharp
 using SuccessHound.Pagination.Abstractions;
 
-public class MyPaginationFactory : IPaginationMetadataFactory
+public sealed class MyPaginationFactory : IPaginationMetadataFactory
 {
     public object CreateMetadata(int page, int pageSize, int totalCount)
     {
@@ -395,31 +402,31 @@ public class MyPaginationFactory : IPaginationMetadataFactory
 Use it:
 
 ```csharp
-SuccessHound.Configure(config =>
+builder.Services.AddSuccessHound(options =>
 {
-    config.UseDefaultApiResponse();
-    config.UsePagination(new MyPaginationFactory());
+    options.UseFormatter<DefaultSuccessFormatter>();
+    options.UsePagination(new MyPaginationFactory());
 });
 ```
 
 ### Framework-Agnostic Usage
 
-Use SuccessHound outside of ASP.NET Core:
+Use SuccessHound formatters outside of ASP.NET Core:
 
 ```csharp
-using SuccessHound;
+using SuccessHound.Abstractions;
 using SuccessHound.Defaults;
 
-// Configure
-SuccessHoundCore.Configure(new DefaultApiResponseFactory());
+// Create formatter
+var formatter = new DefaultSuccessFormatter();
 
-// Wrap data
+// Format data
 var data = new { Message = "Hello, World!" };
-var wrapped = SuccessHoundCore.Wrap(data);
+var wrapped = formatter.Format(data);
 
 // With metadata
 var meta = new { Version = "1.0" };
-var wrappedWithMeta = SuccessHoundCore.Wrap(data, meta);
+var wrappedWithMeta = formatter.Format(data, meta);
 ```
 
 ## Common Scenarios
@@ -429,10 +436,10 @@ var wrappedWithMeta = SuccessHoundCore.Wrap(data, meta);
 SuccessHound handles null data gracefully:
 
 ```csharp
-app.MapGet("/user/{id}", (int id) =>
+app.MapGet("/user/{id}", (int id, HttpContext context) =>
 {
     var user = FindUser(id); // May return null
-    return user.Ok();
+    return user.Ok(context);
 });
 ```
 
@@ -450,14 +457,14 @@ app.MapGet("/user/{id}", (int id) =>
 ### Collections
 
 ```csharp
-app.MapGet("/users", () =>
+app.MapGet("/users", (HttpContext context) =>
 {
     var users = new List<User>
     {
         new User { Id = 1, Name = "Alice" },
         new User { Id = 2, Name = "Bob" }
     };
-    return users.Ok();
+    return users.Ok(context);
 });
 ```
 
@@ -484,7 +491,7 @@ app.MapGet("/users", () =>
 ### Complex Metadata
 
 ```csharp
-app.MapGet("/report", () =>
+app.MapGet("/report", (HttpContext context) =>
 {
     var report = GenerateReport();
     var meta = new
@@ -495,7 +502,7 @@ app.MapGet("/report", () =>
         Version = "1.0",
         Filters = new { StartDate = "2025-01-01", EndDate = "2025-12-31" }
     };
-    return report.WithMeta(meta);
+    return report.WithMeta(meta, context);
 });
 ```
 
