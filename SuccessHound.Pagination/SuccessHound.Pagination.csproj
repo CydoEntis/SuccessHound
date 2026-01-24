@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,7 +7,7 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>SuccessHound.Pagination</PackageId>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Authors>CydoEntis</Authors>
     <Description>Optional pagination package for SuccessHound. Provides EF Core and in-memory pagination with customizable metadata factories. Includes ToPagedResultAsync() extension methods.</Description>
     <PackageTags>api;pagination;efcore;response;metadata;dotnet;rest</PackageTags>
@@ -17,7 +17,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageReleaseNotes>v1.0.0 - Breaking changes: ToPagedResultAsync() and ToPagedResult() now require HttpContext parameter. UsePagination() works with SuccessHoundOptions instead of static configuration. See README for migration guide.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.0.0 - Strongly-typed pagination metadata. BREAKING CHANGES: IPaginationMetadataFactory.CreateMetadata() now returns PaginationMeta instead of object; Pagination extensions now use PaginationMeta directly (no anonymous object wrapper). NEW FEATURES: Add PaginationMeta class for strongly-typed pagination metadata; Improved Swagger/OpenAPI schema generation for pagination. MIGRATION: Custom IPaginationMetadataFactory implementations must return PaginationMeta. Requires SuccessHound 2.0.0 and SuccessHound.AspNetExtensions 2.0.0. See README for migration examples.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

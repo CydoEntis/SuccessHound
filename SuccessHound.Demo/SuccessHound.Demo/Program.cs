@@ -7,6 +7,7 @@ using SuccessHound.Defaults;
 using SuccessHound.Extensions;
 using SuccessHound.Pagination;
 using SuccessHound.Pagination.Extensions;
+using SuccessHound.Pagination.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -298,6 +299,33 @@ api.MapGet("/demo/custom-format", (HttpContext context) =>
     return data.Ok(context);
 })
 .WithName("DemoCustomFormatter")
+.WithTags("Demo")
+.Produces(200);
+
+// ────────────────────────────────────────────────────────────────────────────────
+// 13. Strongly-Typed Metadata Example (v2.0.0 Feature)
+// ────────────────────────────────────────────────────────────────────────────────
+
+api.MapGet("/demo/strongly-typed-meta", async (DemoDbContext db, HttpContext context) =>
+{
+    var totalUsers = await db.Users.CountAsync();
+    var activeUsers = await db.Users.CountAsync(u => u.IsActive);
+    
+    var data = new
+    {
+        TotalUsers = totalUsers,
+        ActiveUsers = activeUsers,
+        Message = "This demonstrates strongly-typed metadata with PaginationMeta"
+    };
+
+    // Get pagination factory to create strongly-typed metadata
+    var factory = context.RequestServices.GetRequiredService<SuccessHound.Pagination.Abstractions.IPaginationMetadataFactory>();
+    var paginationMeta = factory.CreateMetadata(page: 1, pageSize: 10, totalCount: totalUsers);
+
+    // Use strongly-typed WithMeta<TData, TMeta> overload
+    return data.WithMeta(paginationMeta, context);
+})
+.WithName("DemoStronglyTypedMeta")
 .WithTags("Demo")
 .Produces(200);
 

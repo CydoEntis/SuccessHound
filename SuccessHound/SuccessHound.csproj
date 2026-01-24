@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -7,7 +7,7 @@
 
         <!-- NuGet Package Metadata -->
         <PackageId>SuccessHound</PackageId>
-        <Version>1.0.0</Version>
+        <Version>2.0.0</Version>
         <Authors>CydoEntis</Authors>
         <Description>Lightweight, extensible .NET library for wrapping success responses in consistent API envelopes. Framework-agnostic core with factory pattern for maximum flexibility.</Description>
         <PackageTags>api;response;wrapping;envelope;success;rest;dotnet</PackageTags>
@@ -17,7 +17,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <PackageReleaseNotes>v1.0.0 - Major refactor: DI-first architecture with no static state. Breaking changes: Moved from static SuccessHound.Configure() to builder.Services.AddSuccessHound(). See README for migration guide.</PackageReleaseNotes>
+        <PackageReleaseNotes>v2.0.0 - Major: Strongly-typed metadata support. BREAKING CHANGES: IPaginationMetadataFactory.CreateMetadata() now returns PaginationMeta instead of object; ApiResponse&lt;T&gt;.Ok() no longer accepts meta parameter (use ApiResponse&lt;TData, TMeta&gt;.Ok() instead). NEW FEATURES: Add ApiResponse&lt;TData, TMeta&gt; for strongly-typed metadata responses; Add NoMeta marker type; Add PaginationMeta class; Add WithMeta&lt;TData, TMeta&gt;() extension method. BACKWARD COMPATIBILITY: ApiResponse&lt;T&gt; continues to work; WithMeta&lt;T&gt;(object) overload maintained. See README for migration guide.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
