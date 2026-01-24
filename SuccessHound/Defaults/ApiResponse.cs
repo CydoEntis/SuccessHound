@@ -1,9 +1,11 @@
-﻿namespace SuccessHound.Defaults;
+namespace SuccessHound.Defaults;
 
 /// <summary>
-/// Generic API response envelope for SuccessHound.
+/// Generic API response envelope with strongly-typed metadata.
 /// </summary>
-public class ApiResponse<T>
+/// <typeparam name="TData">The type of the response data</typeparam>
+/// <typeparam name="TMeta">The type of the metadata</typeparam>
+public class ApiResponse<TData, TMeta>
 {
     /// <summary>
     /// Indicates whether the request was successful
@@ -13,18 +15,44 @@ public class ApiResponse<T>
     /// <summary>
     /// The response payload
     /// </summary>
-    public T? Data { get; init; }
+    public TData? Data { get; init; }
 
     /// <summary>
     /// Optional metadata (pagination, versioning, etc.)
     /// </summary>
-    public object? Meta { get; init; }
+    public TMeta? Meta { get; init; }
 
     /// <summary>
     /// UTC timestamp when the response was created
     /// </summary>
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 
+    protected ApiResponse()
+    {
+    }
+
+    /// <summary>
+    /// Creates a successful response wrapping the given data and metadata.
+    /// </summary>
+    public static ApiResponse<TData, TMeta> Ok(TData data, TMeta meta) =>
+        new() { Success = true, Data = data, Meta = meta };
+}
+
+/// <summary>
+/// Marker type representing absence of metadata.
+/// </summary>
+public sealed class NoMeta
+{
+    internal static readonly NoMeta Instance = new();
+    private NoMeta() { }
+}
+
+/// <summary>
+/// Generic API response envelope without metadata (backward-compatible wrapper).
+/// </summary>
+/// <typeparam name="T">The type of the response data</typeparam>
+public class ApiResponse<T> : ApiResponse<T, NoMeta>
+{
     private ApiResponse()
     {
     }
@@ -32,6 +60,11 @@ public class ApiResponse<T>
     /// <summary>
     /// Creates a successful response wrapping the given data.
     /// </summary>
-    public static ApiResponse<T> Ok(T data, object? meta = null) =>
-        new() { Success = true, Data = data, Meta = meta };
+    public static ApiResponse<T> Ok(T data) =>
+        new()
+        {
+            Success = true,
+            Data = data,
+            Meta = NoMeta.Instance
+        };
 }
