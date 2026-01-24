@@ -10,13 +10,13 @@ public class DefaultPaginationMetadataFactory : IPaginationMetadataFactory
     /// <summary>
     /// Creates standard pagination metadata
     /// </summary>
-    public object CreateMetadata(int page, int pageSize, int totalCount)
+    public PaginationMeta CreateMetadata(int page, int pageSize, int totalCount)
     {
         var totalPages = totalCount > 0
             ? (int)Math.Ceiling(totalCount / (double)pageSize)
             : -1;
 
-        return new
+        return new PaginationMeta
         {
             Page = page,
             PageSize = pageSize,
