@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using SuccessHound.AspNetExtensions;
 using SuccessHound.Pagination.Abstractions;
+using SuccessHound.Pagination.Defaults;
 
 namespace SuccessHound.Pagination.Extensions;
 
@@ -44,6 +45,7 @@ public static class EnumerableExtensions
 
         var metadata = factory.CreateMetadata(page, pageSize, totalCount);
 
-        return items.WithMeta(new { Pagination = metadata }, context);
+        // Use strongly-typed WithMeta overload
+        return items.WithMeta(metadata, context);
     }
 }
