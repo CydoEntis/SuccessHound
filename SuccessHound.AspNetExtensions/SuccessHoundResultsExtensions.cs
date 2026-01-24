@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using SuccessHound.Abstractions;
 
 namespace SuccessHound.AspNetExtensions;
@@ -56,9 +56,21 @@ public static class SuccessHoundResultsExtensions
     }
 
     /// <summary>
-    /// Returns a 200 OK response including metadata.
+    /// Returns a 200 OK response including metadata (backward-compatible overload).
     /// </summary>
     public static IResult WithMeta<T>(this T data, object meta, HttpContext context)
+    {
+        var formatter = GetFormatter(context);
+        var wrapped = formatter.Format(data, meta);
+        return Results.Ok(wrapped);
+    }
+
+    /// <summary>
+    /// Returns a 200 OK response including strongly-typed metadata.
+    /// </summary>
+    /// <typeparam name="TData">The type of the response data</typeparam>
+    /// <typeparam name="TMeta">The type of the metadata</typeparam>
+    public static IResult WithMeta<TData, TMeta>(this TData data, TMeta meta, HttpContext context)
     {
         var formatter = GetFormatter(context);
         var wrapped = formatter.Format(data, meta);
