@@ -24,8 +24,10 @@
 ## Why SuccessHound?
 
 - **Consistent API responses** - Standardized success envelope across your entire API
-- **Type-safe** - Full generic support with IntelliSense
+- **Strongly-typed metadata** - Full type safety with `ApiResponse<TData, TMeta>` - no runtime casting
+- **Swagger/OpenAPI ready** - Proper schema generation for all metadata types
 - **Extensible** - Factory pattern lets you customize everything
+- **Backward compatible** - Existing code continues to work with `ApiResponse<T>`
 - **Optional features** - Only install what you need (core + pagination)
 - **Framework-agnostic** - Core works anywhere, extensions are optional
 - **Zero ceremony** - Fluent API with minimal configuration
@@ -162,17 +164,33 @@ app.Run();
 
 ## Response Structure
 
-All responses wrapped by SuccessHound include:
+SuccessHound uses a strongly-typed response envelope system:
+
+### Core Types
 
 ```csharp
-public class ApiResponse<T>
+// Two-generic envelope for responses with metadata
+public class ApiResponse<TData, TMeta>
 {
     public bool Success { get; init; }      // Always true for success responses
-    public T? Data { get; init; }           // Your payload
-    public object? Meta { get; init; }      // Optional metadata (pagination, etc.)
+    public TData? Data { get; init; }       // Your payload
+    public TMeta? Meta { get; init; }       // Strongly-typed metadata
     public DateTime Timestamp { get; init; } // UTC timestamp
 }
+
+// Backward-compatible wrapper for responses without metadata
+public class ApiResponse<T> : ApiResponse<T, NoMeta>
+{
+    // Inherits all properties, Meta is always NoMeta.Instance
+}
 ```
+
+### Benefits of Strongly-Typed Metadata
+
+- **Type Safety**: Compile-time checking for metadata types
+- **Swagger/OpenAPI**: Proper schema generation for metadata
+- **IntelliSense**: Full IDE support when working with metadata
+- **No Runtime Casting**: Direct access to typed metadata properties
 
 ## Extension Methods
 
@@ -244,20 +262,22 @@ app.MapDelete("/products/{id}", (int id) =>
 
 **Response:** `204 No Content` (no body)
 
-### `.WithMeta<T>(object meta)`
+### `.WithMeta<TData, TMeta>(TMeta meta)` (Strongly-Typed)
 
-Returns `200 OK` with custom metadata.
+Returns `200 OK` with strongly-typed metadata. **Recommended for new code.**
 
 ```csharp
+// Define your metadata type
+public class VersionMeta
+{
+    public string Version { get; init; } = "v1.0";
+    public DateTime ServerTime { get; init; } = DateTime.UtcNow;
+}
+
 app.MapGet("/products", (HttpContext context, int page = 1) =>
 {
     var products = GetProducts(page);
-    var meta = new
-    {
-        Page = page,
-        Version = "v1.0",
-        ServerTime = DateTime.UtcNow
-    };
+    var meta = new VersionMeta { Version = "v2.0" };
     return products.WithMeta(meta, context);
 });
 ```
@@ -271,12 +291,29 @@ app.MapGet("/products", (HttpContext context, int page = 1) =>
     ...
   ],
   "meta": {
-    "page": 1,
-    "version": "v1.0",
+    "version": "v2.0",
     "serverTime": "2025-12-15T10:30:00.000Z"
   },
   "timestamp": "2025-12-15T10:30:00.000Z"
 }
+```
+
+### `.WithMeta<T>(object meta)` (Backward-Compatible)
+
+Returns `200 OK` with custom metadata. **Still supported for backward compatibility.**
+
+```csharp
+app.MapGet("/products", (HttpContext context, int page = 1) =>
+{
+    var products = GetProducts(page);
+    var meta = new
+    {
+        Page = page,
+        Version = "v1.0",
+        ServerTime = DateTime.UtcNow
+    };
+    return products.WithMeta(meta, context);
+});
 ```
 
 ### `.Custom<T>(int statusCode)`
@@ -321,19 +358,64 @@ app.MapGet("/items", (HttpContext context, int page = 1, int pageSize = 10) =>
 
 ### Pagination Metadata
 
-Default pagination metadata includes:
+Pagination now uses strongly-typed `PaginationMeta`:
+
+```csharp
+public class PaginationMeta
+{
+    public int Page { get; init; }
+    public int PageSize { get; init; }
+    public int TotalCount { get; init; }
+    public int TotalPages { get; init; }
+    public bool HasNextPage { get; init; }
+    public bool HasPreviousPage { get; init; }
+}
+```
+
+**Response:**
 
 ```json
 {
-  "pagination": {
+  "success": true,
+  "data": [
+    { "id": 1, "name": "Alice" },
+    { "id": 2, "name": "Bob" }
+  ],
+  "meta": {
     "page": 1,
     "pageSize": 10,
     "totalCount": 100,
     "totalPages": 10,
     "hasNextPage": true,
     "hasPreviousPage": false
-  }
+  },
+  "timestamp": "2025-12-15T10:30:00.000Z"
 }
+```
+
+### Strongly-Typed Pagination Usage
+
+You can also use pagination with explicit types:
+
+```csharp
+using SuccessHound.Defaults;
+using SuccessHound.Pagination.Defaults;
+
+app.MapGet("/users", async (AppDbContext db, HttpContext context, int page = 1, int pageSize = 10) =>
+{
+    var users = await db.Users
+        .OrderBy(u => u.Id)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+    
+    var totalCount = await db.Users.CountAsync();
+    var factory = context.RequestServices.GetRequiredService<IPaginationMetadataFactory>();
+    var meta = factory.CreateMetadata(page, pageSize, totalCount);
+    
+    // Explicitly typed response
+    return Results.Ok(ApiResponse<IReadOnlyList<User>, PaginationMeta>.Ok(users, meta));
+});
 ```
 
 ## Advanced Usage
@@ -372,28 +454,27 @@ builder.Services.AddSuccessHound(options =>
 
 ### Custom Pagination Factory
 
-Customize pagination metadata:
+Customize pagination metadata by implementing `IPaginationMetadataFactory`:
 
 ```csharp
 using SuccessHound.Pagination.Abstractions;
+using SuccessHound.Pagination.Defaults;
 
 public sealed class MyPaginationFactory : IPaginationMetadataFactory
 {
-    public object CreateMetadata(int page, int pageSize, int totalCount)
+    public PaginationMeta CreateMetadata(int page, int pageSize, int totalCount)
     {
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-        return new
+        // Return strongly-typed PaginationMeta
+        return new PaginationMeta
         {
-            CurrentPage = page,
-            PerPage = pageSize,
-            Total = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
             TotalPages = totalPages,
-            Links = new
-            {
-                Next = page < totalPages ? $"/api?page={page + 1}" : null,
-                Previous = page > 1 ? $"/api?page={page - 1}" : null
-            }
+            HasNextPage = page < totalPages,
+            HasPreviousPage = page > 1
         };
     }
 }
@@ -408,6 +489,8 @@ builder.Services.AddSuccessHound(options =>
     options.UsePagination(new MyPaginationFactory());
 });
 ```
+
+**Note**: For custom metadata structures beyond `PaginationMeta`, you can create your own metadata types and use `ApiResponse<TData, TMeta>` directly.
 
 ### Framework-Agnostic Usage
 
