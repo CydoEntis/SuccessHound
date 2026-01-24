@@ -38,13 +38,12 @@ namespace SuccessHound.Tests
 
             var metadata = factory.CreateMetadata(page: 2, pageSize: 10, totalCount: 95);
 
-            var json = JsonSerializer.Serialize(metadata);
-            Assert.Contains("\"Page\":2", json);
-            Assert.Contains("\"PageSize\":10", json);
-            Assert.Contains("\"TotalCount\":95", json);
-            Assert.Contains("\"TotalPages\":10", json);
-            Assert.Contains("\"HasNextPage\":true", json);
-            Assert.Contains("\"HasPreviousPage\":true", json);
+            Assert.Equal(2, metadata.Page);
+            Assert.Equal(10, metadata.PageSize);
+            Assert.Equal(95, metadata.TotalCount);
+            Assert.Equal(10, metadata.TotalPages);
+            Assert.True(metadata.HasNextPage);
+            Assert.True(metadata.HasPreviousPage);
         }
 
         [Fact]
@@ -54,8 +53,7 @@ namespace SuccessHound.Tests
 
             var metadata = factory.CreateMetadata(page: 1, pageSize: 10, totalCount: 50);
 
-            var json = JsonSerializer.Serialize(metadata);
-            Assert.Contains("\"HasPreviousPage\":false", json);
+            Assert.False(metadata.HasPreviousPage);
         }
 
         [Fact]
@@ -65,8 +63,7 @@ namespace SuccessHound.Tests
 
             var metadata = factory.CreateMetadata(page: 5, pageSize: 10, totalCount: 50);
 
-            var json = JsonSerializer.Serialize(metadata);
-            Assert.Contains("\"HasNextPage\":false", json);
+            Assert.False(metadata.HasNextPage);
         }
 
         [Fact]
@@ -76,9 +73,8 @@ namespace SuccessHound.Tests
 
             var metadata = factory.CreateMetadata(page: 1, pageSize: 10, totalCount: -1);
 
-            var json = JsonSerializer.Serialize(metadata);
-            Assert.Contains("\"TotalCount\":-1", json);
-            Assert.Contains("\"TotalPages\":-1", json);
+            Assert.Equal(-1, metadata.TotalCount);
+            Assert.Equal(-1, metadata.TotalPages);
         }
 
         [Fact]
@@ -92,6 +88,7 @@ namespace SuccessHound.Tests
             var okResult = (Ok<object>)result;
             var json = JsonSerializer.Serialize(okResult.Value);
 
+            // Verify pagination metadata is present
             Assert.Contains("\"Page\":2", json);
             Assert.Contains("\"PageSize\":10", json);
             Assert.Contains("\"TotalCount\":100", json);
@@ -219,9 +216,17 @@ namespace SuccessHound.Tests
 
         private class CustomTestPaginationFactory : IPaginationMetadataFactory
         {
-            public object CreateMetadata(int page, int pageSize, int totalCount)
+            public PaginationMeta CreateMetadata(int page, int pageSize, int totalCount)
             {
-                return new { CustomPage = page, CustomSize = pageSize };
+                return new PaginationMeta
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = totalCount > 0 ? (int)Math.Ceiling(totalCount / (double)pageSize) : -1,
+                    HasNextPage = totalCount > 0 && page < (int)Math.Ceiling(totalCount / (double)pageSize),
+                    HasPreviousPage = page > 1
+                };
             }
         }
     }

@@ -46,6 +46,10 @@ namespace SuccessHound.Tests
             var result = formatter.Format(payload, meta);
 
             var type = result.GetType();
+            // Should be ApiResponse<TData, TMeta> when metadata is provided
+            Assert.True(type.IsGenericType);
+            Assert.Equal(2, type.GetGenericArguments().Length);
+            
             var dataProp = type.GetProperty("Data")!.GetValue(result);
             var metaProp = type.GetProperty("Meta")!.GetValue(result);
 
